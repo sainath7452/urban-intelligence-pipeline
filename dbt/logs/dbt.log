@@ -1,0 +1,27 @@
+[0m14:48:13.635708 [debug] [MainThread]: Got an exception trying to initialize tracking
+
+
+============================== 14:48:13.825713 | f386adb5-95a9-448b-848a-facd4588a4a0 ==============================
+[0m14:48:13.825713 [info ] [MainThread]: Running with dbt=1.11.8
+[0m14:48:13.826743 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'no_print': 'None', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'printer_width': '80', 'write_json': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'None', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': 'C:\\Users\\saina\\.dbt', 'invocation_command': 'dbt init urban_intelligence', 'use_colors': 'True', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'log_path': 'logs'}
+[0m14:48:13.905477 [debug] [MainThread]: Starter project path: C:\Users\saina\anaconda3\Lib\site-packages\dbt\include\starter_project
+[0m14:48:13.965446 [info ] [MainThread]: 
+Your new dbt project "urban_intelligence" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m14:48:13.965446 [info ] [MainThread]: Setting up your profile.
+[0m14:49:01.015715 [info ] [MainThread]: Profile urban_intelligence written to C:\Users\saina\.dbt\profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
+[0m14:49:01.019346 [debug] [MainThread]: Command `dbt init` succeeded at 14:49:01.019346 after 47.57 seconds
+[0m14:49:01.021085 [debug] [MainThread]: Flushing usage events

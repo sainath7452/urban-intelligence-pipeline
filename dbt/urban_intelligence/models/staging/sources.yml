@@ -1,0 +1,22 @@
+version: 2
+
+sources:
+  - name: staging
+    database: urban-intelligence-pipeline-sv
+    schema: staging
+    tables:
+      - name: taxi_weather_staging
+        description: "Joined taxi and weather data from PySpark transformation"
+        columns:
+          - name: vendor_id
+            description: "Taxi vendor identifier"
+          - name: pickup_datetime
+            description: "Trip pickup timestamp"
+          - name: fare_amount
+            description: "Base fare in USD"
+          - name: trip_distance
+            description: "Trip distance in miles"
+          - name: weather_condition
+            description: "Weather condition at time of pickup"
+          - name: temperature_f
+            description: "Temperature in Fahrenheit at time of pickup"

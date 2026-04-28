@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: fct_taxi_trips
+    description: "Fact table containing all NYC taxi trips with weather conditions"
+    columns:
+      - name: trip_key
+        description: "Surrogate key for each trip"
+        tests:
+          - not_null
+      - name: fare_amount
+        description: "Base fare in USD"
+        tests:
+          - not_null
+      - name: trip_distance
+        description: "Trip distance in miles"
+        tests:
+          - not_null
+      - name: weather_condition
+        description: "Weather condition at time of pickup"
+        tests:
+          - accepted_values:
+              values: ['clear_sky', 'partly_cloudy', 'foggy', 'rainy', 'snowy', 'rain_showers', 'thunderstorm', 'other']
+
+  - name: dim_date
+    description: "Date dimension table"
+    columns:
+      - name: date_key
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_location
+    description: "NYC taxi zone location dimension"
+    columns:
+      - name: location_id
+        tests:
+          - unique
+          - not_null
