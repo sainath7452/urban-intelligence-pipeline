@@ -16,3 +16,7 @@ venv/
 *service-account*.json
 *credentials*.json
 application_default_credentials.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
