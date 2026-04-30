@@ -4,7 +4,8 @@
 # Orchestrates: ingestion → transformation → dbt → monitoring
 
 import sys
-sys.path.insert(0, "C:/Users/saina/Desktop/urban-intelligence-pipeline")
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from monitoring.pipeline_monitor import run_monitoring
 from datetime import datetime, timedelta
 from airflow import DAG
