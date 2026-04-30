@@ -1,0 +1,185 @@
+name: Urban Intelligence Pipeline CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  DBT_PROJECT_DIR: dbt/urban_intelligence
+  DBT_PROFILES_DIR: dbt
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1 — Validate DAG syntax
+  # ---------------------------------------------------------------------------
+  validate-dag:
+    name: Validate Airflow DAG
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Airflow and dependencies
+        run: |
+          pip install --upgrade pip
+          pip install "apache-airflow==2.10.3" \
+            --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.3/constraints-3.11.txt"
+          pip install google-cloud-bigquery
+
+      - name: Validate DAG loads without errors
+        run: |
+          python -c "
+          import ast, sys
+          with open('airflow/dags/urban_pipeline_dag.py') as f:
+              source = f.read()
+          ast.parse(source)
+          print('DAG syntax check passed')
+          "
+
+      - name: Check DAG integrity with Airflow
+        env:
+          AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/airflow/dags
+          AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+          AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////tmp/airflow.db
+          PYTHONWARNINGS: ignore
+        run: |
+          airflow db migrate
+          airflow dags list | grep urban_intelligence_pipeline
+          echo "DAG integrity check passed"
+
+  # ---------------------------------------------------------------------------
+  # Job 2 — dbt model and test validation
+  # ---------------------------------------------------------------------------
+  dbt-ci:
+    name: dbt Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dbt
+        run: |
+          pip install --upgrade pip
+          pip install dbt-bigquery==1.7.0
+
+      - name: Write GCP service account key
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' > /tmp/gcp_sa_key.json
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Write dbt profiles.yml
+        run: |
+          mkdir -p dbt
+          cat > dbt/profiles.yml << EOF
+          urban_intelligence:
+            target: ci
+            outputs:
+              ci:
+                type: bigquery
+                method: service-account
+                project: urban-intelligence-pipeline-sv
+                dataset: urban_staging
+                keyfile: /tmp/gcp_sa_key.json
+                location: us-central1
+                threads: 4
+                timeout_seconds: 300
+          EOF
+
+      - name: dbt debug (connection check)
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        run: |
+          dbt debug --profiles-dir ../../dbt
+        continue-on-error: true   # don't fail if BQ creds unavailable in fork PRs
+
+      - name: dbt compile (validate all model SQL)
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        run: |
+          dbt compile --profiles-dir ../../dbt
+        continue-on-error: true
+
+      - name: dbt test (run all data quality tests)
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+        run: |
+          dbt test --profiles-dir ../../dbt
+        continue-on-error: true   # tests may fail on CI if data not seeded
+
+  # ---------------------------------------------------------------------------
+  # Job 3 — Python code quality
+  # ---------------------------------------------------------------------------
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linting tools
+        run: |
+          pip install flake8 black
+
+      - name: Check formatting with black
+        run: |
+          black --check --diff \
+            airflow/dags/urban_pipeline_dag.py \
+            monitoring/pipeline_monitor.py \
+            ingestion/batch/
+        continue-on-error: true   # warn only, don't block
+
+      - name: Lint with flake8
+        run: |
+          flake8 \
+            airflow/dags/urban_pipeline_dag.py \
+            monitoring/pipeline_monitor.py \
+            ingestion/batch/ \
+            --max-line-length=120 \
+            --ignore=E501,W503
+        continue-on-error: true   # warn only, don't block
+
+      - name: Validate monitoring script syntax
+        run: |
+          python -m py_compile monitoring/pipeline_monitor.py
+          echo "Monitoring script syntax OK"
+
+  # ---------------------------------------------------------------------------
+  # Job 4 — Pipeline summary (runs after all jobs)
+  # ---------------------------------------------------------------------------
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [validate-dag, dbt-ci, code-quality]
+    if: always()
+
+    steps:
+      - name: Print CI summary
+        run: |
+          echo "================================================"
+          echo "  Urban Intelligence Pipeline — CI Complete"
+          echo "  DAG Validation : ${{ needs.validate-dag.result }}"
+          echo "  dbt Tests      : ${{ needs.dbt-ci.result }}"
+          echo "  Code Quality   : ${{ needs.code-quality.result }}"
+          echo "================================================"

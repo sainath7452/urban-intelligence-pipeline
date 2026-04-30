@@ -20,3 +20,6 @@ application_default_credentials.json
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
+airflow/airflow.db
+airflow/logs/
+airflow/*.db
