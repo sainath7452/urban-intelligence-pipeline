@@ -104,6 +104,19 @@ The Urban Intelligence Pipeline is a 7-day portfolio project that demonstrates p
 
 ---
 
+## 📸 Screenshots
+
+### Airflow DAG — Task Graph
+![DAG Graph](docs/screenshots/airflow_dag_graph.png)
+
+### Airflow DAG — Pipeline View
+![DAG List](docs/screenshots/airflow_dag_list.png)
+
+### Looker Studio — NYC Taxi Analytics Dashboard
+![Dashboard](docs/screenshots/looker_dashboard.png)
+
+---
+
 ## 📁 Project Structure
 
 ```
