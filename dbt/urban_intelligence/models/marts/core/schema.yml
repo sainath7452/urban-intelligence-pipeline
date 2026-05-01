@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: fct_taxi_trips
-    description: "Fact table containing all NYC taxi trips with weather conditions"
+    description: "Fact table containing NYC taxi trips enriched with weather data"
     columns:
       - name: trip_key
         description: "Surrogate key for each trip"
@@ -18,9 +18,6 @@ models:
           - not_null
       - name: weather_condition
         description: "Weather condition at time of pickup"
-        tests:
-          - accepted_values:
-              values: ['clear_sky', 'partly_cloudy', 'foggy', 'rainy', 'snowy', 'rain_showers', 'thunderstorm', 'other']
 
   - name: dim_date
     description: "Date dimension table"

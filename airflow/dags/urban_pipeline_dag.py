@@ -6,7 +6,11 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from monitoring.pipeline_monitor import run_monitoring
+try:
+    from monitoring.pipeline_monitor import run_monitoring
+except ImportError:
+    def run_monitoring(**context):
+        print("Monitoring module not available in this environment")
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator

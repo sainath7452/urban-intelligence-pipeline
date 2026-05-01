@@ -20,3 +20,21 @@ sources:
             description: "Weather condition at time of pickup"
           - name: temperature_f
             description: "Temperature in Fahrenheit at time of pickup"
+
+  - name: raw
+    database: urban-intelligence-pipeline-sv
+    schema: raw
+    tables:
+    - name: weather_raw
+      description: "Raw hourly NYC weather data from Open-Meteo API"
+      columns:
+        - name: date
+          description: "Date of weather record"
+        - name: hour
+          description: "Hour of weather record (0-23)"
+        - name: temperature_f
+          description: "Temperature in Fahrenheit"
+        - name: precipitation_inch
+          description: "Precipitation in inches"
+        - name: weather_condition
+          description: "Human readable weather condition"
